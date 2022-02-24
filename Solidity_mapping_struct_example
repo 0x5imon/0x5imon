@@ -1,0 +1,49 @@
+pragma solidity ^0.5.13;
+
+
+contract mymappingexample {   /*purpose is to send money and view balances of different addresses in the mapping*/
+
+    struct Payment {
+        uint amount;
+        uint timestamps;
+    }
+
+    struct Balance {
+        uint totalBalance;
+        uint numPayments;
+        mapping(uint => Payment) payments;
+    }
+
+    mapping (address => Balance) public BalanceReceived;
+
+    function viewbalance() public view returns(uint){
+        return address(this).balance;
+    }
+
+    function contractreceivemoney() public payable{
+        BalanceReceived[msg.sender].totalBalance += msg.value;
+
+        Payment memory payment = Payment(msg.value, now);
+        BalanceReceived[msg.sender].payments[BalanceReceived[msg.sender].numPayments] = payment;
+        BalanceReceived[msg.sender].numPayments++;
+    }
+
+
+    function sendpartialmoney(address payable _to, uint _amount) public {
+        require(BalanceReceived[msg.sender].totalBalance >= _amount, "you do not have enough money");
+        BalanceReceived[msg.sender].totalBalance -= _amount;
+        _to.transfer(_amount);
+
+    }
+
+
+    function sendmoney(address payable _to) public  {
+        uint balancetosend = BalanceReceived[msg.sender].totalBalance;
+        BalanceReceived[msg.sender].totalBalance = 0;
+        _to.transfer(balancetosend);
+
+    }
+
+
+
+}
