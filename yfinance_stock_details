@@ -1,0 +1,127 @@
+import pandas as pd
+import json
+import numpy as np
+import requests
+import yfinance as yf
+from datetime import date, timedelta
+from IPython.display import display
+
+
+
+pd.options.display.float_format = '{:,}'.format
+today = date.today()
+
+
+ticker = 'bac'
+ticker1 = yf.Ticker(ticker)
+
+
+
+def new_company_info():    
+    industry = " "
+    country = " "
+    website = " "
+    marketcap = " "
+    annual_revenue = " "
+    shares_outstanding = " "
+    total_cash = " "
+    total_debt = " "
+    gross_profits = " "
+    ebitda = " "
+    netincome_to_common = " "
+    shares_float = " "
+    institutions = " "
+    insiders = " "
+    shares_short = " "
+    shares_short_outstanding = " "
+    
+    try: industry = ticker1.info['industry']
+    except:  pass
+    try: country = ticker1.info['country']
+    except:  pass
+    try: website = ticker1.info['website']
+    except:  pass
+    try: marketcap = ('{:,}'.format(ticker1.info['marketCap']//1000000))
+    except:  pass
+    try: annual_revenue = ('{:,}'.format(ticker1.info['totalRevenue']//1000000))
+    except:  pass
+    try: shares_outstanding =  ('{:,}'.format(ticker1.info['sharesOutstanding']//1000000))
+    except:  pass
+    try: shares_float =  ('{:,}'.format(ticker1.info['floatShares']//1000000))
+    except:  pass
+    try: institutions =  ('{:,}'.format(ticker1.info['heldPercentInstitutions']*100))
+    except:  pass
+    try: insiders =  ('{:,}'.format(ticker1.info['heldPercentInsiders']*100))
+    except:  pass
+    try: shares_short =  ('{:,}'.format(ticker1.info['sharesShort']//1000000))
+    except:  pass
+    try: shares_short_outstanding =  ('{:,}'.format(ticker1.info['sharesPercentSharesOut']*100))
+    except:  pass
+    try: total_cash = ('{:,}'.format(ticker1.info['totalCash']//1000000))
+    except:  pass
+    try: total_debt = ('{:,}'.format(ticker1.info['totalDebt']//1000000))
+    except:  pass
+    try: gross_profits = ('{:,}'.format(ticker1.info['grossProfits']//1000000))
+    except:  pass
+    try: ebitda = ('{:,}'.format(ticker1.info['ebitda']//1000000))
+    except:  pass
+    try: netincome_to_common = ('{:,}'.format(ticker1.info['netIncomeToCommon']//1000000))
+    except:  pass
+
+    
+    print("Ticker: " + ticker 
+     + "\n" + "Industry: " + industry
+     + "\n" + "Country: " + country
+     + "\n" + "Website: " + website
+     + "\n" + "Market Cap: $" + marketcap + " M"
+     + "\n" + "Total Revenue (Annual): $" + annual_revenue + " M" 
+     + "\n" + "Shares Outstanding: " + shares_outstanding + " M" 
+     + "\n" + "Float: " + shares_float + " M"  
+     + "\n" + "Institutions %: " + institutions
+     + "\n" + "Insiders %: " + insiders 
+     + "\n" + "Shares Short: " + shares_short + " M"       
+     + "\n" + "Short % Outstanding Shares: " + shares_short_outstanding  + "\n"
+     + "\n" + "Total Cash: $" + total_cash + " M"     
+     + "\n" + "Total Debt: $" + total_debt + " M"       
+     + "\n" + "Gross Profits: $" + gross_profits + " M"     
+     + "\n" + "EBITDA: $" + ebitda + " M"     
+     + "\n" + "Net Income To Shareholders: $" + netincome_to_common + " M"   
+          )
+          
+          
+          
+new_company_info()
+
+
+
+def q_balsheet():
+    bs_df = pd.DataFrame(ticker1.quarterly_balance_sheet)
+    A = pd.DataFrame(bs_df.loc['Cash']).T
+    B = pd.DataFrame(bs_df.loc['Total Assets']).T
+    C = pd.DataFrame(bs_df.loc['Total Liab']).T
+    D = pd.DataFrame(bs_df.loc['Total Stockholder Equity']).T
+    E = pd.DataFrame(bs_df.loc['Total Current Assets']).T
+    F = pd.DataFrame(bs_df.loc['Total Current Liabilities']).T
+    G = pd.DataFrame(bs_df.loc['Net Receivables']).T
+    H = pd.DataFrame(bs_df.loc['Accounts Payable']).T
+
+    q_balance = pd.concat([A, B, C, D, E, F, G, H], axis=0)
+    nice = display(q_balance)
+    print("Ticker: " + ticker + "\n" + "Market Cap: $" + '{:,}'.format(ticker1.info['marketCap']//1000000) + " M" )
+    
+    
+    
+    def q_financials():
+    bs_df = pd.DataFrame(ticker1.quarterly_financials)
+    A = pd.DataFrame(bs_df.loc['Total Revenue']).T
+    B = pd.DataFrame(bs_df.loc['Cost Of Revenue']).T
+    C = pd.DataFrame(bs_df.loc['Total Operating Expenses']).T
+    D = pd.DataFrame(bs_df.loc['Gross Profit']).T
+    E = pd.DataFrame(bs_df.loc['Net Income']).T
+    F = pd.DataFrame(bs_df.loc['Operating Income']).T
+    G = pd.DataFrame(bs_df.loc['Ebit']).T
+    H = pd.DataFrame(bs_df.loc['Net Income From Continuing Ops']).T
+
+    q_fin = pd.concat([A, B, C, D, E, F, G, H], axis=0)
+    nice = display(q_fin)
+    print("Ticker: " + ticker + "\n" + "Market Cap: $" + '{:,}'.format(ticker1.info['marketCap']//1000000) + " M" )
