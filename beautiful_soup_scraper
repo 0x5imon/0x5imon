@@ -1,0 +1,149 @@
+
+
+import pandas as pd
+import json
+import time
+import numpy as np
+import requests
+from datetime import date, datetime, timedelta
+from IPython.display import display
+import gspread
+import df2gspread as d2g
+from oauth2client.service_account import ServiceAccountCredentials
+from bs4 import BeautifulSoup as bs
+import requests
+
+scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name('htp-articles-c81d64e746fb.json', scope)
+
+gc = gspread.authorize(credentials)
+
+r = requests.get("https://www.eventbrite.com/d/tx--houston/food-and-drink--parties--this-month/edm-dj-party/?lang=en&page=1")
+soup = bs(r.content)
+
+def change_date(old_date):
+    global month1
+    global new_date
+    month = (old_date.split(" "))[0]
+    the_date = (old_date.split(" "))[1]
+    if (month == 'Jan'):
+        month1 = 1
+    elif(month == 'Feb'):
+        month1 = 2
+    elif(month == 'Mar'):
+        month1 = 3
+    elif(month == 'Apr'):
+        month1 = 4
+    elif(month == 'May'):
+        month1 = 5
+    elif(month == 'Jun'):
+        month1 = 6
+    elif(month == 'Jul'):
+        month1 = 7
+    elif(month == 'Aug'):
+        month1 = 8
+    elif(month == 'Sep'):
+        month1 = 9
+    elif(month == 'Oct'):
+        month1 = 10
+    elif(month == 'Nov'):
+        month1 = 11
+    elif(month == 'Dec'):
+        month1 = 12
+    else:
+         print("month not found")
+    new_date = (str(month1) + "/" + str(the_date) + "/2022")
+    return new_date
+
+month1 = ''
+new_date = ''
+
+
+def next_available_row(worksheet):
+        str_list = list(filter(None, worksheet.col_values(1)))
+        return str(len(str_list)+1)
+
+def get_events():
+
+    
+    #Find the pagination number of pages
+    pagination = soup.find("div", {"class": "undefined paginator__link eds-l-pad-top-2 eds-text-weight--heavy"})
+    page_string = pagination.get_text()
+    stripped_string = int(page_string.strip('...'))    
+    pages=1
+    
+    
+    
+    #While loop to go through each individual page
+    while pages <= stripped_string:
+        
+        link = f'https://www.eventbrite.com/d/tx--houston/food-and-drink--parties--this-month/edm-dj-party/?lang=en&page={pages}'
+        r1 = requests.get(link)
+        soup1 = bs(r1.content)
+        
+        mydivs_all = soup1.find_all("div", {"class": "eds-event-card-content__content__principal"})
+        total_results = len(mydivs_all)
+        mydivs = soup1.find("div", {"class": "eds-event-card-content__content__principal"})
+        item=0
+        
+        #While loop to extract each result
+        while item < total_results:
+            try:
+                mydivs_text = mydivs_all[item].get_text(" | ")
+
+                mydivs2= mydivs_all[item].find_all("a")
+                a_href=mydivs_all[item].find("a",{"class":"eds-event-card-content__action-link"}).get("href")
+
+                split_text = mydivs_text.split(" | ")
+                event_name = split_text[0]
+                try:
+                    event_date = (split_text[2].split(" + "))[0]
+
+                    event_date2 = (event_date.split(", "))[1]
+                    event_time = (event_date.split(", "))[2]
+                    the_date = change_date(event_date2)
+                except:
+                    pass
+                
+                try:
+                    event_location = (split_text[3].split(" • "))[0]
+                except:
+                    pass
+                try:
+                    event_state = (split_text[3].split(" • "))[1]
+                except:
+                    pass
+
+                worksheet = gc.open("Beautiful Soup Events").sheet1
+                next_row = next_available_row(worksheet)
+                worksheet.update_acell("A{}".format(next_row), the_date)
+                worksheet.update_acell("B{}".format(next_row), event_time)
+                worksheet.update_acell("C{}".format(next_row), event_name)
+                worksheet.update_acell("D{}".format(next_row), event_location)
+                try:
+                    worksheet.update_acell("E{}".format(next_row), event_state)
+                except:
+                    pass
+
+                worksheet.update_acell("F{}".format(next_row), a_href)
+                time.sleep(8)
+                item+=2
+            except:
+                pass
+        pages+=1
+
+ 
+
+
+         
+
+ran_date = 'Jan 18'
+the_date = change_date(ran_date)
+the_date
+
+'1/18/2022'
+
+ 
+
