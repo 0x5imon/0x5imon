@@ -1,0 +1,84 @@
+
+
+from newsapi import NewsApiClient
+import datetime as dt
+import pandas as pd
+import gspread
+import df2gspread as d2g
+import numpy
+from datetime import date, timedelta
+from oauth2client.service_account import ServiceAccountCredentials
+
+pd.set_option('display.max_colwidth', None)
+pd.set_option('display.max_rows', None)
+newsapi = NewsApiClient(api_key='f1f66a9dd4d943708dca03e9ff6bb0c0')
+n_days_ago = 1
+today = date.today()
+n_days = today - timedelta(n_days_ago)
+
+scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name('htp-articles-c81d64e746fb.json', scope)
+
+gc = gspread.authorize(credentials)
+
+data_specific = newsapi.get_everything(q="sbfm", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+data_specific1 = data_specific['articles']
+df_specific = pd.DataFrame(data_specific1)
+df_specific.drop_duplicates(subset=['title'], keep='first')
+df_specific = df_specific.sort_values(by=['publishedAt'], ascending=False)
+df_specific.drop('source', inplace=True, axis=1)
+df_specific.drop('urlToImage', inplace=True, axis=1)
+df_specific.drop('content', inplace=True, axis=1)
+df_specific.drop('author', inplace=True, axis=1)
+df_specific
+
+	title 	description 	url 	publishedAt
+2 	Sunshine Biopharma extends upswing to fourth consecutive day 	The shares of development-stage biotech Sunshine Biopharma (SBFM) are likely to extend the recent surge to the fourth straight session on Friday on the back of positive lab data on... 	https://seekingalpha.com/news/3821982-sbfm-stock-extends-upswing-to-fourth-straight-session 	2022-04-08T11:50:50Z
+4 	Need to Know: Here’s one way to potentially get more from a 60/40 portfolio 	Instead of stocks and bonds, perhaps a slice of a portfolio should go to carbon credits, says this strategist. 	https://www.marketwatch.com/story/heres-one-way-to-potentially-get-more-from-a-60-40-portfolio-11649416197 	2022-04-08T11:24:00Z
+1 	CAN, LILM and AUR among mid-day movers 	Gainers: Momentus MNTS +49%.Trevi Therapeutics TRVI +49%.Sunshine Biopharma SBFM +34%.Werewolf Therapeutics HOWL +30%.System1 SST +27%.AppTech Payments (APCX) +22%.MiNK Therapeutics... 	https://seekingalpha.com/news/3821780-can-lilm-and-aur-among-mid-day-movers 	2022-04-07T16:44:14Z
+0 	Trevi Therapeutics leads healthcare gainers; Aptinyx and Vapotherm among losers 	Gainers: Trevi Therapeutics (TRVI) +36%. Sunshine Biopharma (SBFM) +31% 	https://seekingalpha.com/news/3821748-trevi-therapeutics-leads-healthcare-gainers-aptinyx-and-vapotherm-among-losers 	2022-04-07T15:36:30Z
+3 	Thinking about buying stock in Sunshine Biopharma, IMAC, Advent Technologies, Bitnile, or Rite Aid? 	NEW YORK, April 7, 2022 /PRNewswire/ -- InvestorsObserver issues critical PriceWatch Alerts for SBFM, IMAC, ADN, NILE, and RAD. To see how InvestorsObserver's proprietary scoring system rates these stocks, view the InvestorsObserver's PriceWatch Alert by sele… 	https://www.prnewswire.com/news-releases/thinking-about-buying-stock-in-sunshine-biopharma-imac-advent-technologies-bitnile-or-rite-aid-301520158.html 	2022-04-07T14:55:00Z
+
+data_fda = newsapi.get_everything(q="disappointed and clinical trial", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+data_fda_b = newsapi.get_everything(q="fda and fail", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+data_fda_c = newsapi.get_everything(q="clinical trial and death", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+data_fda_d = newsapi.get_everything(q="fail and endpoint", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+data_fda_e = newsapi.get_everything(q="discontinue and trial", exclude_domains='rlsbb.ru', language='en', page_size=100, from_param=n_days)
+
+data_fda1 = data_fda['articles']
+data_fda_b1 = data_fda_b['articles']
+data_fda_c1 = data_fda_c['articles']
+data_fda_d1 = data_fda_d['articles']
+data_fda_e1 = data_fda_e['articles']
+df = pd.DataFrame(data_fda1 + data_fda_b1 + data_fda_c1 + data_fda_d1 +data_fda_e1)
+df.drop_duplicates(subset=['title'], keep='first')
+df = df.sort_values(by=['publishedAt'], ascending=False)
+df.drop('source', inplace=True, axis=1)
+df.drop('urlToImage', inplace=True, axis=1)
+df.drop('content', inplace=True, axis=1)
+df.drop('author', inplace=True, axis=1)
+
+df
+
+
+df.loc[29]
+
+title                                                                                                                                                               Taysha Gene Therapies Reports Fourth Quarter and Full Year 2021 Financial Results and Provides Corporate Update
+description    DALLAS--(BUSINESS WIRE)--Taysha Gene Therapies, Inc. (Nasdaq: TSHA), a patient-centric, pivotal-stage gene therapy company focused on developing and commercializing AAV-based gene therapies for the treatment of monogenic diseases of the central nervous system…
+url                                                                                                        https://www.businesswire.com/news/home/20220331005423/en/Taysha-Gene-Therapies-Reports-Fourth-Quarter-and-Full-Year-2021-Financial-Results-and-Provides-Corporate-Update
+publishedAt                                                                                                                                                                                                                                                    2022-03-31T11:11:21Z
+Name: 29, dtype: object
+
+python_test = gc.open("Stock News Updates").sheet1
+python_test.update([df.columns.values.tolist()] + df.values.tolist())
+
+{'spreadsheetId': '1rfZUPWazgZFIU3Ea0-cC6Wj65DIvbvqfci4ObLOZwV4',
+ 'updatedRange': 'Sheet1!A1:D106',
+ 'updatedRows': 106,
+ 'updatedColumns': 4,
+ 'updatedCells': 424}
+
+ 
+
