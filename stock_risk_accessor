@@ -1,0 +1,217 @@
+
+
+import pandas as pd
+import json
+import numpy as np
+import requests
+import yfinance as yf
+from datetime import date, timedelta
+from IPython.display import display
+import pandas_datareader as pdr
+import datetime as dt
+pd.options.display.float_format = '{:,.2f}'.format 
+
+ticker = 'crxt'
+
+def find_resistance(ticker):
+    
+    ticker1 = yf.Ticker(ticker)
+    start = dt.datetime(2012, 1, 1)
+    end = dt.datetime(2022, 4, 13)
+    data = pdr.get_data_yahoo(ticker, start, end, interval='w')
+    
+    industry = " "
+    country = " "
+    website = " "
+    marketcap = " "
+    annual_revenue = " "
+    shares_outstanding = " "
+    total_cash = " "
+    total_debt = " "
+    gross_profits = " "
+    ebitda = " "
+    netincome_to_common = " "
+    shares_float = " "
+    institutions = " "
+    insiders = " "
+    shares_short = " "
+    shares_short_outstanding = " "
+    
+    try: industry = ticker1.info['industry']
+    except:  pass
+    try: country = ticker1.info['country']
+    except:  pass
+    try: website = ticker1.info['website']
+    except:  pass
+    try: marketcap = ('{:,}'.format(ticker1.info['marketCap']//1000000))
+    except:  pass
+    try: annual_revenue = ('{:,}'.format(ticker1.info['totalRevenue']//1000000))
+    except:  pass
+    try: shares_outstanding =  ('{:,}'.format(ticker1.info['sharesOutstanding']//1000000))
+    except:  pass
+    try: shares_float =  ('{:,}'.format(ticker1.info['floatShares']//1000000))
+    except:  pass
+    try: institutions =  ('{:,.2f}'.format(ticker1.info['heldPercentInstitutions']*100))
+    except:  pass
+    try: insiders =  ('{:,.2f}'.format(ticker1.info['heldPercentInsiders']*100))
+    except:  pass
+    try: shares_short =  ('{:,}'.format(ticker1.info['sharesShort']//1000000))
+    except:  pass
+    try: shares_short_outstanding =  ('{:,}'.format(ticker1.info['sharesPercentSharesOut']*100))
+    except:  pass
+    try: total_cash = ('{:,}'.format(ticker1.info['totalCash']//1000000))
+    except:  pass
+    try: total_debt = ('{:,}'.format(ticker1.info['totalDebt']//1000000))
+    except:  pass
+    try: gross_profits = ('{:,}'.format(ticker1.info['grossProfits']//1000000))
+    except:  pass
+    try: ebitda = ('{:,}'.format(ticker1.info['ebitda']//1000000))
+    except:  pass
+    try: netincome_to_common = ('{:,}'.format(ticker1.info['netIncomeToCommon']//1000000))
+    except:  pass
+
+    
+    today_open = ticker1.info['open']
+    previous_close = ticker1.info['previousClose']
+    day_high = ticker1.info['dayHigh']
+    price = ticker1.info['currentPrice']
+    short_interest = ticker1.info['sharesPercentSharesOut']*100
+    today_volume = int(ticker1.info["volume"])
+    average_volume = ticker1.info['averageDailyVolume10Day']
+    relative_volume = today_volume/average_volume
+    institutions1 = ticker1.info['heldPercentInstitutions']
+    insiders1 = ticker1.info['heldPercentInsiders']
+    annual_revenue = ('{:,}'.format(ticker1.info['totalRevenue']//1000000))
+ 
+    result = data[data['Open'] > (.75*today_open)]
+    result1 = result[result['Open'] < (1.25*day_high)]
+    result1_resistance = result1[result1['Close'] < (.90*result1['High'])]
+    result1a = result1_resistance.sort_values(by=['High'], ascending=False)
+    
+    column_to_move = result1a.pop("Close")
+    result1a.insert(1, "Close", column_to_move)
+    column_to_move2 = result1a.pop("Open")
+    result1a.insert(2, "Open", column_to_move2)
+    result2 = display(np.round((result1a), decimals=2))
+
+    print (result2,  " \n", "Resistance", " \n", "Ticker: ", ticker, 
+           " \n", "Industry: " , ticker1.info['industry'], 
+           " \n", "Current Price: ", price, 
+           " \n", "Market Cap: ", '{:,}'.format(ticker1.info['marketCap']//1000000), " M", 
+           " \n", "Total Cash: $", total_cash, "M", 
+           " \n", "Total Debt: $", total_debt, "M",
+           " \n", "Institutional Ownership: ", institutions, "%",
+           " \n", "Insiders: ", insiders, "%",
+           " \n", "Shares Outstanding: ", shares_outstanding, "M", 
+           " \n", "Shares Float: ", shares_float, "M",
+           " \n", "Today's Volume: ", "{:,}".format(today_volume), 
+           " \n", "Average 10 Day Volume: ", "{:,}".format(average_volume), 
+           " \n", "Relative Volume: ", "{:,.2f}".format(relative_volume),
+           " \n", "Short Interest: ", short_interest, "%")
+    
+    if day_high > (1.20*previous_close):
+        print(" \n", "Shorting Risk: Day 1 Frontside  **HIGH RISK**")
+        
+    if (sum(result1a['High'] > day_high) < 3):
+        print(" \n", "Shorting Risk: Less Than 3 Resistance Areas: *HIGH RISK**")
+    
+    if short_interest > 5:
+        print(" \n", "Shorting Risk: High Short Interest, Potential Squeeze!!  **HIGH RISK**")
+        
+    if insiders1 > .50:
+        print(" \n", "Shorting Risk: High Insider Ownership! **Medium RISK**")
+        
+    if institutions1 > .25:
+        print(" \n", "Shorting Risk: High Institutional Ownership! **HIGH RISK**")
+   
+
+ def find_support(ticker_a):
+    ticker1 = yf.Ticker(ticker_a)
+    start = dt.datetime(2012, 1, 1)
+    end = dt.datetime(2022, 4, 13)
+    data = pdr.get_data_yahoo(ticker_a, start, end, interval='w')
+    today_open = ticker1.info['open']
+    day_high = ticker1.info['dayHigh']
+    price = ticker1.info['currentPrice']
+    today_volume = int(ticker1.info["volume"])
+    result1 = data[(data['Open'] > (.75*today_open)) & (data['Open'] < (1.25*day_high))]
+    result1_support = result1[result1['Close'] > (1.07*result1['Low'])]
+    result1a = result1_support.sort_values(by=['Low'], ascending=False)
+    column_to_move = result1a.pop("High")
+    result1a.insert(3, "High", column_to_move)
+    result2 = display(np.round((result1a), decimals=2))
+    average_volume = ticker1.info['averageDailyVolume10Day']
+    relative_volume = today_volume/average_volume
+    print (result2,  " \n", "Support", " \n", "Ticker: ", ticker_a, 
+                      " \n", "Industry: " , ticker1.info['industry'], 
+           " \n",  "Current Price: ", price, " \n", "Market Cap: ", '{:,}'.format(ticker1.info['marketCap']//1000000), " M", " \n",
+           "Today's Volume: ", "{:,}".format(today_volume), 
+           " \n", "Average Volume: ", "{:,}".format(average_volume), " \n", "Relative Volume: ", "{:,.2f}".format(relative_volume),
+         " \n", "Short Interest: ", ticker1.info['sharesPercentSharesOut']*100, "%")
+    
+
+find_resistance(ticker)
+
+	High 	Close 	Open 	Low 	Volume 	Adj Close
+Date 						
+2022-03-28 	2.11 	1.49 	1.71 	1.37 	11211100 	1.49
+2022-01-10 	1.85 	1.58 	1.67 	1.49 	1658000 	1.58
+2022-04-11 	1.70 	1.24 	1.22 	0.82 	91290700 	1.24
+2022-01-17 	1.59 	1.35 	1.51 	1.33 	685200 	1.35
+2022-02-07 	1.49 	1.30 	1.27 	1.24 	816100 	1.30
+2022-04-04 	1.49 	1.22 	1.49 	1.11 	2007200 	1.22
+2022-01-31 	1.47 	1.28 	1.35 	1.16 	1032200 	1.28
+2022-02-14 	1.36 	1.08 	1.31 	1.07 	999800 	1.08
+2022-02-21 	1.10 	0.94 	1.08 	0.94 	657700 	0.94
+2022-02-28 	1.07 	0.70 	0.98 	0.64 	2193500 	0.70
+
+None  
+ Resistance  
+ Ticker:  crxt  
+ Industry:  Drug Manufacturers—General  
+ Current Price:  1.24  
+ Market Cap:  30  M  
+ Total Cash: $ 21 M  
+ Total Debt: $ 40 M  
+ Institutional Ownership:  78.23 %  
+ Insiders:  5.69 %  
+ Shares Outstanding:  24 M  
+ Shares Float:  1 M  
+ Today's Volume:  88,762,662  
+ Average 10 Day Volume:  9,390,250  
+ Relative Volume:  9.45  
+ Short Interest:  3.01 %
+ 
+ Shorting Risk: Day 1 Frontside  **HIGH RISK**
+ 
+ Shorting Risk: High Institutional Ownership! **HIGH RISK**
+
+find_support(ticker)
+
+	Low 	Open 	Close 	High 	Volume 	Adj Close
+Date 						
+2021-08-29 	3.08 	3.16 	3.91 	3.99 	4,152,700.00 	3.91
+2021-09-26 	2.86 	3.23 	3.08 	3.31 	1,243,200.00 	3.08
+2021-08-22 	2.82 	3.00 	3.09 	3.45 	3,598,400.00 	3.09
+2021-12-05 	1.47 	1.49 	1.74 	1.77 	778,000.00 	1.74
+2022-04-10 	1.34 	1.72 	2.44 	2.67 	79,363,100.00 	2.44
+2022-01-30 	1.26 	1.26 	1.38 	1.66 	634,800.00 	1.38
+2021-12-19 	1.21 	1.31 	1.44 	1.49 	1,129,800.00 	1.44
+2022-01-09 	1.17 	1.29 	1.40 	1.77 	2,962,400.00 	1.40
+2022-02-20 	1.05 	1.15 	1.14 	1.19 	348,000.00 	1.14
+2022-03-20 	1.00 	1.12 	1.08 	1.19 	425,800.00 	1.08
+
+None  
+ Support  
+ Ticker:  mdvl  
+ Industry:  Pharmaceutical Retailers  
+ Current Price:  2.44  
+ Market Cap:  172  M  
+ Today's Volume:  58,634,614  
+ Average Volume:  35,793,160  
+ Relative Volume:  1.64  
+ Short Interest:  1.55 %
+
+def calc_short_risk():
+    
+
