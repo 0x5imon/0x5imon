@@ -1,0 +1,171 @@
+
+
+import pandas as pd
+import json
+import numpy as np
+import twelvedata 
+from twelvedata import TDClient
+import requests
+import alpha_vantage
+from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.fundamentaldata import FundamentalData
+import yfinance as yf
+pd.options.display.float_format = '{:,}'.format
+
+#twelve api info
+
+api_key = '380334f29a554544a89bd2ca1ebf765a'
+interval = '5min'
+size = '100'
+api_url = f"https://api.twelvedata.com/time_series?symbol={ticker}&interval={interval}&outputsize={size}&apikey={api_key}"
+
+#call to twelve api
+
+data= requests.get(api_url).json()
+data1=pd.DataFrame(data['values'])
+
+my_api_key = '380334f29a554544a89bd2ca1ebf765a'
+td = TDClient(my_api_key)
+ts = td.time_series(symbol="VERU", interval="1min", outputsize="10").as_pandas()
+ts
+
+	open 	high 	low 	close 	volume
+datetime 					
+2022-04-14 10:52:00 	15.95 	15.95 	15.7 	15.74 	0
+2022-04-14 10:51:00 	15.921 	15.955 	15.885 	15.904 	0
+2022-04-14 10:50:00 	16.27 	16.27 	15.84 	15.928 	0
+2022-04-14 10:49:00 	16.14 	16.27 	16.14 	16.27 	0
+2022-04-14 10:48:00 	16.035 	16.16 	16.035 	16.16 	0
+2022-04-14 10:47:00 	16.238 	16.306 	16.02 	16.04 	0
+2022-04-14 10:46:00 	16.42 	16.43 	16.16 	16.24 	0
+2022-04-14 10:45:00 	15.95 	16.369 	15.95 	16.35 	0
+2022-04-14 10:44:00 	16.045 	16.15 	15.97 	15.97 	0
+2022-04-14 10:43:00 	15.97 	16.16 	15.966 	16.125 	0
+
+def twelve_intraday_data(symbol, interval):
+    api_key = '380334f29a554544a89bd2ca1ebf765a'
+    size = '10'
+    api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
+
+    raw_df = requests.get(api_url).json()
+    df = pd.DataFrame(raw_df['values'])
+    return df
+
+intraday = twelve_intraday_data('drct', '5min')
+intraday
+
+---------------------------------------------------------------------------
+KeyError                                  Traceback (most recent call last)
+/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3944582069.py in <module>
+      8     return df
+      9 
+---> 10 intraday = twelve_intraday_data('drct', '5min')
+     11 intraday
+
+/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3944582069.py in twelve_intraday_data(symbol, interval)
+      5 
+      6     raw_df = requests.get(api_url).json()
+----> 7     df = pd.DataFrame(raw_df['values'])
+      8     return df
+      9 
+
+KeyError: 'values'
+
+def twelve_intraday_data(symbol, interval):
+    api_key = '380334f29a554544a89bd2ca1ebf765a'
+    api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
+    raw_df = requests.get(api_url).json()
+    df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
+    df = df.rename(columns = {'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close', '5. volume': 'volume'})
+    for i in df.columns:
+        df[i] = df[i].astype(float)
+    df.index = pd.to_datetime(df.index)
+    df = df.iloc[::-1]
+    return df
+
+intraday = twelve_intraday_data('veru', '1min')
+intraday
+
+---------------------------------------------------------------------------
+KeyError                                  Traceback (most recent call last)
+/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3502339814.py in <module>
+     11     return df
+     12 
+---> 13 intraday = twelve_intraday_data('veru', '1min')
+     14 intraday
+
+/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3502339814.py in twelve_intraday_data(symbol, interval)
+      3     api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
+      4     raw_df = requests.get(api_url).json()
+----> 5     df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
+      6     df = df.rename(columns = {'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close', '5. volume': 'volume'})
+      7     for i in df.columns:
+
+KeyError: 'Time Series (1min)'
+
+#call to alpha advantage
+av_api_key = 'OMLJ0ZI5647XYCS7'
+interval2 = '5min'
+url = f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&interval=5min&symbol={ticker}&apikey={av_api_key}"
+
+ts = TimeSeries(key=av_api_key, output_format='pandas')
+data3 = ts.get_weekly(ticker)
+
+def get_intraday_data(symbol, interval):
+    api_key = 'OMLJ0ZI5647XYCS7'
+    api_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval={interval}&apikey={api_key}'
+    raw_df = requests.get(api_url).json()
+    df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
+    df = df.rename(columns = {'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close', '5. volume': 'volume'})
+    for i in df.columns:
+        df[i] = df[i].astype(float)
+    df.index = pd.to_datetime(df.index)
+    df = df.iloc[::-1]
+    return df
+
+intraday = get_intraday_data('veru', '1min')
+intraday
+
+	open 	high 	low 	close 	volume
+2022-04-13 18:21:00 	15.85 	15.85 	15.77 	15.79 	23,762.0
+2022-04-13 18:22:00 	15.81 	15.88 	15.68 	15.68 	31,011.0
+2022-04-13 18:23:00 	15.7 	15.72 	15.67 	15.72 	11,949.0
+2022-04-13 18:24:00 	15.72 	15.76 	15.7 	15.7 	12,387.0
+2022-04-13 18:25:00 	15.74 	15.79 	15.73 	15.79 	8,260.0
+... 	... 	... 	... 	... 	...
+2022-04-13 19:56:00 	15.63 	15.64 	15.53 	15.64 	28,844.0
+2022-04-13 19:57:00 	15.61 	15.62 	15.5 	15.51 	48,018.0
+2022-04-13 19:58:00 	15.5 	15.52 	15.43 	15.43 	38,554.0
+2022-04-13 19:59:00 	15.42 	15.47 	15.36 	15.4 	77,271.0
+2022-04-13 20:00:00 	15.4 	15.5 	15.38 	15.5 	85,942.0
+
+100 rows × 5 columns
+
+#call to get overview
+ov_url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey={av_api_key}'
+ov = requests.get(ov_url).json()
+
+data3
+
+(            1. open  2. high  3. low  4. close    5. volume
+ date                                                       
+ 2022-04-13     5.99    14.57   5.680     14.30  621231834.0
+ 2022-04-08     4.90     5.06   4.340      4.35    2602910.0
+ 2022-04-01     5.07     5.36   4.750      4.85    2897693.0
+ 2022-03-25     5.30     5.47   5.000      5.08    2473165.0
+ 2022-03-18     5.12     5.43   4.715      5.33    5796584.0
+ ...             ...      ...     ...       ...          ...
+ 1999-12-10     1.47     1.50   1.310      1.50     102600.0
+ 1999-12-03     1.31     1.50   1.090      1.50     222100.0
+ 1999-11-26     1.28     1.59   1.250      1.37     531700.0
+ 1999-11-19     1.25     1.37   1.000      1.28     203100.0
+ 1999-11-12     0.97     1.37   0.810      1.19     375500.0
+ 
+ [1171 rows x 5 columns],
+ {'1. Information': 'Weekly Prices (open, high, low, close) and Volumes',
+  '2. Symbol': 'VERU',
+  '3. Last Refreshed': '2022-04-13',
+  '4. Time Zone': 'US/Eastern'})
+
+ 
+
