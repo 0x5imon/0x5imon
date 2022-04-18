@@ -1,0 +1,159 @@
+
+
+import pandas as pd
+import json
+import time
+import numpy as np
+import requests
+import yfinance as yf
+from datetime import date, datetime, timedelta
+from IPython.display import display
+import gspread
+import df2gspread as d2g
+from oauth2client.service_account import ServiceAccountCredentials
+
+pd.options.display.float_format = '{:,}'.format
+pd.set_option('display.max_rows', None)
+
+scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name('htp-articles-c81d64e746fb.json', scope)
+
+gc = gspread.authorize(credentials)
+
+ticker = "tlry"
+ticker1 = yf.Ticker(ticker)
+ticker_list = ['spy', 'tell', 'amc', 'mara', 'coin', 'tlry', 'baba', 'afrm', 'twtr', 'et'] 
+
+exp_date_list = ['2022-04-22', '2022-05-20', '2022-06-17']
+
+exp_date = '2022-04-14'
+exp_date2 = '2022-05-20'
+exp_date3 = '2022-05-20'
+
+def next_available_row(worksheet):
+        str_list = list(filter(None, worksheet.col_values(1)))
+        return str(len(str_list)+1)
+def pull_chains(expiration):
+    today = datetime.today().isoformat(sep=' ', timespec='seconds')
+    opt = ticker1.option_chain(expiration)
+    opt_c = opt.calls
+    opt_p = opt.puts
+    opt_c2 = pd.DataFrame(opt_c)
+    opt_p2 = pd.DataFrame(opt_p)
+    sum_volume = opt_c['volume'].sum()
+    sum_oi = opt_c['openInterest'].sum()
+    sum_p_volume = opt_p2['volume'].sum()
+    sum_p_oi = opt_p2['openInterest'].sum()
+    sc_sp_v = sum_volume/sum_p_volume
+    scspv = round(sc_sp_v, 3)
+    sc_sp_oi = sum_oi/sum_p_oi
+    scspv = round(sc_sp_v, 3)
+    scspoi= round(sc_sp_oi, 3)
+    data = [{'Time Recorded': str(today), 'Ticker': ticker, 'Exp': expiration,  'Sum Call Volume': sum_volume, 'Sum Put Volume': sum_p_volume,
+         'Sum Call OI': sum_oi, 'Sum Put OI': sum_p_oi, 
+         'Call/Put V Ratio:': scspv, 'Call/Put OI Ratio:': scspoi}]
+    df_2 = pd.DataFrame(data)
+    nice = display(df_2)
+    worksheet = gc.open("Options Flow").sheet1
+    next_row = next_available_row(worksheet)
+    worksheet.update_acell("A{}".format(next_row), today)
+    worksheet.update_acell("B{}".format(next_row), ticker)
+    worksheet.update_acell("C{}".format(next_row), expiration)
+    worksheet.update_acell("D{}".format(next_row), str(sum_volume))
+    worksheet.update_acell("E{}".format(next_row), str(sum_p_volume))
+    worksheet.update_acell("F{}".format(next_row), str(sum_oi))
+    worksheet.update_acell("G{}".format(next_row), str(sum_p_oi))
+    worksheet.update_acell("H{}".format(next_row), scspv)
+    worksheet.update_acell("I{}".format(next_row), scspoi)
+
+pull_chains(exp_date)
+
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-13 15:57:48 	tlry 	2022-04-14 	25970 	14,179.0 	136539 	57417 	1.832 	2.378
+
+pull_chains(exp_date2)
+
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-12 09:53:16 	tlry 	2022-05-20 	925 	1,591.0 	92696 	45747 	0.581 	2.026
+
+pull_chains(exp_date3)
+
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-07 12:38:07 	qqq 	2022-05-20 	24,164.0 	41,687.0 	301945 	806502 	0.58 	0.374
+
+def next_available_row(worksheet):
+    str_list = list(filter(None, worksheet.col_values(1)))
+    return str(len(str_list)+1)
+
+
+def pull_multiple_chains(expiration):
+    for current_ticker in ticker_list:
+        for current_exp_date in exp_date_list:
+            try:
+                current_ticker_x = yf.Ticker(current_ticker)
+                today = datetime.today().isoformat(sep=' ', timespec='seconds')
+                opt = current_ticker_x.option_chain(current_exp_date)
+                opt_c = opt.calls
+                opt_p = opt.puts
+                opt_c2 = pd.DataFrame(opt_c)
+                opt_p2 = pd.DataFrame(opt_p)
+                sum_volume = opt_c['volume'].sum()
+                sum_oi = opt_c['openInterest'].sum()
+                sum_p_volume = opt_p2['volume'].sum()
+                sum_p_oi = opt_p2['openInterest'].sum()
+                sc_sp_v = sum_volume/sum_p_volume
+                scspv = round(sc_sp_v, 3)
+                sc_sp_oi = sum_oi/sum_p_oi
+                scspv = round(sc_sp_v, 3)
+                scspoi= round(sc_sp_oi, 3)
+                data = [{'Time Recorded': str(today), 'Ticker': current_ticker, 'Exp': current_exp_date,  'Sum Call Volume': sum_volume, 'Sum Put Volume': sum_p_volume,
+                     'Sum Call OI': sum_oi, 'Sum Put OI': sum_p_oi, 
+                     'Call/Put V Ratio:': scspv, 'Call/Put OI Ratio:': scspoi}]
+                df_2 = pd.DataFrame(data)
+                nice = display(df_2)
+                worksheet = gc.open("Options Flow").sheet1
+                next_row = next_available_row(worksheet)
+                worksheet.update_acell("A{}".format(next_row), today)
+                worksheet.update_acell("B{}".format(next_row), current_ticker)
+                worksheet.update_acell("C{}".format(next_row), current_exp_date)
+                worksheet.update_acell("D{}".format(next_row), str(sum_volume))
+                worksheet.update_acell("E{}".format(next_row), str(sum_p_volume))
+                worksheet.update_acell("F{}".format(next_row), str(sum_oi))
+                worksheet.update_acell("G{}".format(next_row), str(sum_p_oi))
+                worksheet.update_acell("H{}".format(next_row), scspv)
+                worksheet.update_acell("I{}".format(next_row), scspoi)
+                time.sleep(8)
+            except:
+                continue
+
+pull_multiple_chains(exp_date)
+
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:05:24 	spy 	2022-05-20 	123,897.0 	329,521.0 	733,315.0 	2,063,431.0 	0.376 	0.355
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:05:38 	spy 	2022-07-15 	25,263.0 	23,614.0 	228,226.0 	390,223.0 	1.07 	0.585
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:05:50 	tell 	2022-05-20 	23,391.0 	3,249.0 	62080 	15,760.0 	7.199 	3.939
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:01 	tell 	2022-07-15 	17112 	1983 	121725 	9401 	8.629 	12.948
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:12 	amc 	2022-05-20 	8722 	10960 	99471 	116153 	0.796 	0.856
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:23 	amc 	2022-07-15 	6,290.0 	803 	195127 	65495 	7.833 	2.979
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:34 	mara 	2022-05-20 	3634 	2429 	30158 	22390 	1.496 	1.347
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:45 	coin 	2022-05-20 	3,250.0 	6,137.0 	23069 	28442 	0.53 	0.811
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:06:55 	tlry 	2022-05-20 	6027 	1,281.0 	92831 	47038 	4.705 	1.974
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:07:06 	baba 	2022-05-20 	20,661.0 	15,089.0 	191,943.0 	107879 	1.369 	1.779
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:07:16 	baba 	2022-07-15 	6,218.0 	1273 	61105 	30441 	4.885 	2.007
+	Time Recorded 	Ticker 	Exp 	Sum Call Volume 	Sum Put Volume 	Sum Call OI 	Sum Put OI 	Call/Put V Ratio: 	Call/Put OI Ratio:
+0 	2022-04-15 00:07:27 	afrm 	2022-05-20 	5460 	1734 	79299 	71226 	3.149 	1.113
+
+ 
+
