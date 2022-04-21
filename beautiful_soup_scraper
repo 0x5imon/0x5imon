@@ -16,7 +16,7 @@ import requests
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name('htp-articles-c81d64e746fb.json', scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name([insert API json here], scope)
 
 gc = gspread.authorize(credentials)
 
