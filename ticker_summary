@@ -1,0 +1,220 @@
+import pandas as pd
+import json
+import numpy as np
+import time
+import requests
+from datetime import date, timedelta
+from IPython.display import Audio, display, clear_output
+import pandas_datareader as pdr
+import datetime as dt
+import yfinance as yf
+from IPython.display import display_html 
+pd.options.display.precision = 2
+pd.set_option('display.precision', 2)
+
+
+
+def new_company_info(ticker):  
+    ticker1 = yf.Ticker(ticker)
+    industry = " "
+    country = " "
+    website = " "
+    marketcap = " "
+    annual_revenue = " "
+    shares_outstanding = " "
+    total_cash = " "
+    total_debt = " "
+    gross_profits = " "
+    ebitda = " "
+    netincome_to_common = " "
+    shares_float = " "
+    institutions = " "
+    insiders = " "
+    shares_short = " "
+    shares_short_outstanding = " "
+    
+    try: industry = ticker1.info['industry']
+    except:  pass
+    try: country = ticker1.info['country']
+    except:  pass
+    try: website = ticker1.info['website']
+    except:  pass
+    try: marketcap = ('{:,}'.format(ticker1.info['marketCap']//1000000))
+    except:  pass
+    try: annual_revenue = ('{:,}'.format(ticker1.info['totalRevenue']//1000000))
+    except:  pass
+    try: shares_outstanding =  ('{:,}'.format(ticker1.info['sharesOutstanding']//1000000))
+    except:  pass
+    try: shares_float =  ('{:,}'.format(ticker1.info['floatShares']//1000000))
+    except:  pass
+    try: institutions =  ('{:,}'.format(ticker1.info['heldPercentInstitutions']*100))
+    except:  pass
+    try: insiders =  ('{:,}'.format(ticker1.info['heldPercentInsiders']*100))
+    except:  pass
+    try: shares_short =  ('{:,}'.format(ticker1.info['sharesShort']//1000000))
+    except:  pass
+    try: shares_short_outstanding =  ('{:,}'.format(ticker1.info['sharesPercentSharesOut']*100))
+    except:  pass
+    try: total_cash = ('{:,}'.format(ticker1.info['totalCash']//1000000))
+    except:  pass
+    try: total_debt = ('{:,}'.format(ticker1.info['totalDebt']//1000000))
+    except:  pass
+    try: gross_profits = ('{:,}'.format(ticker1.info['grossProfits']//1000000))
+    except:  pass
+    try: ebitda = ('{:,}'.format(ticker1.info['ebitda']//1000000))
+    except:  pass
+    try: netincome_to_common = ('{:,}'.format(ticker1.info['netIncomeToCommon']//1000000))
+    except:  pass
+
+    
+    print("Ticker: " + ticker 
+     + "\n" + "Industry: " + industry
+     + "\n" + "Country: " + country
+     + "\n" + "Website: " + website
+     + "\n" + "Market Cap: $" + marketcap + " M"
+     + "\n" + "Total Revenue (Annual): $" + annual_revenue + " M" 
+     + "\n" + "Shares Outstanding: " + shares_outstanding + " M" 
+     + "\n" + "Float: " + shares_float + " M"  
+     + "\n" + "Institutions %: " + institutions
+     + "\n" + "Insiders %: " + insiders 
+     + "\n" + "Shares Short: " + shares_short + " M"       
+     + "\n" + "Short % Outstanding Shares: " + shares_short_outstanding  + "\n"
+     + "\n" + "Total Cash: $" + total_cash + " M"     
+     + "\n" + "Total Debt: $" + total_debt + " M"       
+     + "\n" + "Gross Profits: $" + gross_profits + " M"     
+     + "\n" + "EBITDA: $" + ebitda + " M"     
+     + "\n" + "Net Income To Shareholders: $" + netincome_to_common + " M"   
+          )
+
+def find_support_resistance(ticker):
+    
+    ticker1 = yf.Ticker(ticker)
+    start = dt.datetime(2012, 1, 1)
+    end = date.today()
+    data = pdr.get_data_yahoo(ticker, start, end, interval='w')
+    
+    industry = " "
+    country = " "
+    website = " "
+    marketcap = " "
+    annual_revenue = " "
+    shares_outstanding = " "
+    current_price = " "
+    total_cash = " "
+    total_debt = " "
+    gross_profits = " "
+    ebitda = " "
+    netincome_to_common = " "
+    shares_float = " "
+    institutions = " "
+    insiders = " "
+    shares_short = " "
+    shares_short_outstanding = " "
+    
+    try: industry = ticker1.info['industry']
+    except:  pass
+    try: country = ticker1.info['country']
+    except:  pass
+    try: website = ticker1.info['website']
+    except:  pass
+    try: current_price = ticker1.info['currentPrice']
+    except: pass
+    try: marketcap = ('{:,}'.format(ticker1.info['marketCap']//1000000))
+    except:  pass
+    try: annual_revenue = ('{:,}'.format(ticker1.info['totalRevenue']//1000000))
+    except:  pass
+    try: shares_outstanding =  ('{:,}'.format(ticker1.info['sharesOutstanding']//1000000))
+    except:  pass
+    try: shares_float =  ('{:,}'.format(ticker1.info['floatShares']//1000000))
+    except:  pass
+    try: institutions =  ('{:,.2f}'.format(ticker1.info['heldPercentInstitutions']*100))
+    except:  pass
+    try: insiders =  ('{:,.2f}'.format(ticker1.info['heldPercentInsiders']*100))
+    except:  pass
+    try: shares_short =  ('{:,}'.format(ticker1.info['sharesShort']//1000000))
+    except:  pass
+    try: shares_short_outstanding =  float('{:,}'.format(ticker1.info['sharesPercentSharesOut']*100))
+    except:  pass
+    try: total_cash = ('{:,}'.format(ticker1.info['totalCash']//1000000))
+    except:  pass
+    try: total_debt = ('{:,}'.format(ticker1.info['totalDebt']//1000000))
+    except:  pass
+    try: gross_profits = ('{:,}'.format(ticker1.info['grossProfits']//1000000))
+    except:  pass
+    try: ebitda = ('{:,}'.format(ticker1.info['ebitda']//1000000))
+    except:  pass
+    try: netincome_to_common = ('{:,}'.format(ticker1.info['netIncomeToCommon']//1000000))
+    except:  pass
+    try: institutions1 = ticker1.info['heldPercentInstitutions']
+    except: pass
+    try: insiders1 = ticker1.info['heldPercentInsiders']
+    except: pass
+    
+    today_open = ticker1.info['open']
+    previous_close = ticker1.info['previousClose']
+    day_high = ticker1.info['dayHigh']
+
+    today_volume = int(ticker1.info["volume"])
+    average_volume = ticker1.info['averageDailyVolume10Day']
+    relative_volume = today_volume/average_volume
+ 
+    result = data[data['Open'] > (.75*today_open)]
+    result1 = result[result['Open'] < (1.25*day_high)]
+    result1_resistance = result1[result1['Close'] < (.90*result1['High'])]
+    result1a = result1_resistance.sort_values(by=['High'], ascending=False)
+    
+    column_to_move = result1a.pop("Close")
+    result1a.insert(1, "Close", column_to_move)
+    column_to_move2 = result1a.pop("Open")
+    result1a.insert(2, "Open", column_to_move2)
+    result1a.pop("Adj Close")
+    result2 = np.round((result1a), decimals=2)
+    result2.index = result2.index.date
+
+    
+    result3 = data[(data['Open'] > .75*today_open) & (data['Open'] < 1.25*today_open)]
+    result3_support = result3[result3['Close'] > (1.10*result3['Low'])]
+    result3a = result3_support.sort_values(by=['Low'], ascending=False)
+    
+    
+    column_to_move = result3a.pop("High")
+    result3a.insert(3, "High", column_to_move)
+    column_to_move = result3a.pop("Close")
+    result3a.insert(1, "Close", column_to_move)
+    result3a.pop("Adj Close")
+    result4 = np.round((result3a), decimals=2)
+    result4.index = result4.index.date
+
+    
+    df1_style = result2.style.set_table_attributes("style='display:inline; margin-right:20px;'").set_caption("Resistance")
+    df2_style = result4.style.set_table_attributes("style='display:inline'").set_caption("Support")
+
+
+    display_html(df1_style._repr_html_() + df2_style._repr_html_(), raw=True)
+    
+    if day_high > (1.20*previous_close):
+        print(" \n", "Shorting Risk: Day 1 Frontside  **HIGH RISK**")
+        
+    if (sum(result1a['High'] > day_high) < 3):
+        print(" \n", "Shorting Risk: Less Than 3 Resistance Areas: *HIGH RISK**")
+    try:
+        if shares_short_outstanding > 5:
+            print(" \n", "Shorting Risk: High Short Interest, Potential Squeeze!!  **HIGH RISK**")
+    except: pass
+    
+    try:
+        if insiders1 > .50:
+            print(" \n", "Shorting Risk: High Insider Ownership! **Medium RISK**")
+    except: pass
+
+    try:
+        if institutions1 > .25:
+            print(" \n", "Shorting Risk: High Institutional Ownership! **HIGH RISK**")
+    except: pass
+
+    print(" \n")
+    new_company_info(ticker)
+    
+    
+    
+find_support_resistance('dogz')
