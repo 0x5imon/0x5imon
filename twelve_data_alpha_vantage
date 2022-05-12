@@ -14,7 +14,7 @@ pd.options.display.float_format = '{:,}'.format
 
 #twelve api info
 
-api_key = '380334f29a554544a89bd2ca1ebf765a'
+api_key = ''
 interval = '5min'
 size = '100'
 api_url = f"https://api.twelvedata.com/time_series?symbol={ticker}&interval={interval}&outputsize={size}&apikey={api_key}"
@@ -24,7 +24,7 @@ api_url = f"https://api.twelvedata.com/time_series?symbol={ticker}&interval={int
 data= requests.get(api_url).json()
 data1=pd.DataFrame(data['values'])
 
-my_api_key = '380334f29a554544a89bd2ca1ebf765a'
+my_api_key = ''
 td = TDClient(my_api_key)
 ts = td.time_series(symbol="VERU", interval="1min", outputsize="10").as_pandas()
 ts
@@ -43,7 +43,7 @@ datetime
 2022-04-14 10:43:00 	15.97 	16.16 	15.966 	16.125 	0
 
 def twelve_intraday_data(symbol, interval):
-    api_key = '380334f29a554544a89bd2ca1ebf765a'
+    api_key = ''
     size = '10'
     api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
 
@@ -54,25 +54,10 @@ def twelve_intraday_data(symbol, interval):
 intraday = twelve_intraday_data('drct', '5min')
 intraday
 
----------------------------------------------------------------------------
-KeyError                                  Traceback (most recent call last)
-/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3944582069.py in <module>
-      8     return df
-      9 
----> 10 intraday = twelve_intraday_data('drct', '5min')
-     11 intraday
 
-/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3944582069.py in twelve_intraday_data(symbol, interval)
-      5 
-      6     raw_df = requests.get(api_url).json()
-----> 7     df = pd.DataFrame(raw_df['values'])
-      8     return df
-      9 
-
-KeyError: 'values'
 
 def twelve_intraday_data(symbol, interval):
-    api_key = '380334f29a554544a89bd2ca1ebf765a'
+    api_key = ''
     api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
     raw_df = requests.get(api_url).json()
     df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
@@ -86,25 +71,9 @@ def twelve_intraday_data(symbol, interval):
 intraday = twelve_intraday_data('veru', '1min')
 intraday
 
----------------------------------------------------------------------------
-KeyError                                  Traceback (most recent call last)
-/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3502339814.py in <module>
-     11     return df
-     12 
----> 13 intraday = twelve_intraday_data('veru', '1min')
-     14 intraday
-
-/var/folders/t_/dpg8s4k12xlbh8z_mx0wbydr0000gn/T/ipykernel_23925/3502339814.py in twelve_intraday_data(symbol, interval)
-      3     api_url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval={interval}&outputsize={size}&apikey={api_key}"
-      4     raw_df = requests.get(api_url).json()
-----> 5     df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
-      6     df = df.rename(columns = {'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close', '5. volume': 'volume'})
-      7     for i in df.columns:
-
-KeyError: 'Time Series (1min)'
 
 #call to alpha advantage
-av_api_key = 'OMLJ0ZI5647XYCS7'
+av_api_key = ''
 interval2 = '5min'
 url = f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&interval=5min&symbol={ticker}&apikey={av_api_key}"
 
@@ -112,7 +81,7 @@ ts = TimeSeries(key=av_api_key, output_format='pandas')
 data3 = ts.get_weekly(ticker)
 
 def get_intraday_data(symbol, interval):
-    api_key = 'OMLJ0ZI5647XYCS7'
+    api_key = ''
     api_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval={interval}&apikey={api_key}'
     raw_df = requests.get(api_url).json()
     df = pd.DataFrame(raw_df[f'Time Series ({interval})']).T
