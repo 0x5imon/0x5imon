@@ -11,7 +11,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 pd.set_option('display.max_colwidth', None)
 pd.set_option('display.max_rows', None)
-newsapi = NewsApiClient(api_key='f1f66a9dd4d943708dca03e9ff6bb0c0')
+newsapi = NewsApiClient(api_key='')
 n_days_ago = 1
 today = date.today()
 n_days = today - timedelta(n_days_ago)
