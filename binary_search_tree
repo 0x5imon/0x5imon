@@ -1,0 +1,54 @@
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.left = None
+        self.right = None
+        
+
+class BST:
+    def __init__(self):
+        self.root = None
+        
+    def insert(self, data):
+        if self.root == None:
+            self.root = Node(data)
+        else:
+            cur_node = self.root
+            self._insert(cur_node, data)
+            
+    def _insert(self, root, data):
+        if data < root.data:
+            if root.left == None:
+                root.left = Node(data)
+            else:
+                cur_node = root.left
+                self._insert(cur_node, data)
+                
+    def print_tree(self):
+        cur_node = self.root
+        while cur_node:
+            print(cur_node.data)
+            cur_node = cur_node.left
+    
+    def find_data(self, value):
+        if self.root.data == value:
+            print('value found')
+        else:
+            cur_node = self.root
+            while cur_node:
+                if cur_node.data == value:
+                    return ('value found')
+                cur_node = cur_node.left
+                
+        print('value not found')
+
+              
+
+a = BST()
+a.insert(5)
+a.insert(3)
+a.insert(2)
+a.insert(1)
+
+a.print_tree()
+a.find_data(0)
