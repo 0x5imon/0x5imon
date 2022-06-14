@@ -1,5 +1,5 @@
 - 👋 Hi, I’m @0x5imon
-- 👀 I’m interested in ...algorithmic trading, data structure manipulation, blockchain development
+- 👀 I’m interested in ...algorithmic trading, data structure manipulation, machine learning, AI, blockchain development
 - 🌱 I’m currently learning ...Python, HTML, CSS, Solidity
 - 💞️ I’m looking to collaborate on ...
 - 📫 How to reach me ...Twitter @0x5amson
